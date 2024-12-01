@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Downloader</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        label, input, button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        input, button {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #status {
+            margin-top: 15px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        #status.success {
+            color: #155724;
+            background: #d4edda;
+        }
+        #status.error {
+            color: #721c24;
+            background: #f8d7da;
+        }
+    </style>
+</head>
+<body>
+    <h1>Download Video</h1>
+    <form id="downloadform">
+        <label for="link">Video URL:</label>
+        <input type="url" id="link" name="link" placeholder="Enter video URL" required>
+        <button type="submit">Download</button>
+    </form>
+
+    <div id="status"></div>
+
+    <script>
+        document.getElementById('downloadform').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const statusDiv = document.getElementById('status');
+            const formData = new FormData(event.target);
+
+            // Clear previous status messages
+            statusDiv.textContent = '';
+            statusDiv.className = '';
+
+            try {
+                const response = await fetch('http://localhost:8000/download', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    statusDiv.textContent = 'Download started: ' + result.file;
+                    statusDiv.className = 'success';
+
+                    // Optionally clear the input field
+                    event.target.reset();
+                } else {
+                    const error = await response.json();
+                    statusDiv.textContent = 'Error: ' + (error.detail || 'Failed to start download');
+                    statusDiv.className = 'error';
+                }
+            } catch (error) {
+                statusDiv.textContent = 'Network error: ' + error.message;
+                statusDiv.className = 'error';
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
